@@ -1,4 +1,4 @@
-import { linkedInAPIClass } from "../index.js";
+import linkedInAPIClass from "../index.js";
 
 export class LinkedInProfile {
     /** @type {linkedInAPIClass} */
