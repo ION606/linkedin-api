@@ -45,7 +45,7 @@ export class Company {
      * @param {string} name 
      * @param {boolean} raw 
      */
-    getEmployees = (name, limit=1000, raw=false) => this.#APIRef.searchEmployees(name, limit, !raw, [this.urn]);
+    searchEmployees = (name, limit=1000, raw=false) => this.#APIRef.searchEmployees(name, limit, !raw, [this.urn]);
 
     async getInfo() {
         const toAdd = `q=universalName&universalName=${this.urn}`;

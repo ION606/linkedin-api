@@ -192,6 +192,8 @@ export default class linkedInAPIClass {
      * @param {Array<Number>?} numEmp
      * @param {Number?} [start=0]
      * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
+     * @param {boolean} [excludeGeneric=false]
+     * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
      */
     async searchCompanies(keyword, numEmp, start = 0, castToClass = true, excludeGeneric = false) {
         let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))),includeFiltersInResponse:false))`;

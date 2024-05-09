@@ -162,8 +162,8 @@ export default class linkedInAPIClass {
      * @param numEmp Array of numbers representing company sizes
      * @param start Pagination start
      * @param castToClass Whether to cast the result to Company classes or return raw JSON
-     * @param excludeGeneric Whether to exclude generic results
-     * @returns Promise resolving to either an array of Company or raw JSON
+     * @param excludeGeneric Whether to exclude the "generic" class
+     * @returns Promise resolving to either an array of SocialActivityCounts or Group or Company or GenericEntity
      */
     searchCompanies(keyword: string, numEmp?: number[], start?: number, castToClass?: boolean, excludeGeneric?: boolean): Promise<[SocialActivityCounts | Group | Company | GenericEntity]>;
 
