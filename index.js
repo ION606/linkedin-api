@@ -4,4 +4,5 @@ import { Company } from "./classes/Company.js";
 import { GenericEntity, Group, ReactionTypeCount, SocialActivityCounts } from './classes/misc.js'
 
 
-export { linkedInAPIClass, LinkedInProfile, Company, GenericEntity, Group, ReactionTypeCount, SocialActivityCounts };
+export default linkedInAPIClass;
+export { LinkedInProfile, Company, GenericEntity, Group, ReactionTypeCount, SocialActivityCounts };
