@@ -72,7 +72,7 @@ function findRangeIndex(number) {
     for (let i = 0; i < companySizeRanges.length; i++) {
         const [lowerBound, upperBound] = companySizeRanges[i];
         if (number >= lowerBound && number <= upperBound) {
-            return `"${rangeMap[i]}"`;
+            return rangeMap[i];
         }
     }
 
@@ -196,7 +196,7 @@ export default class linkedInAPIClass {
      * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
      */
     async searchCompanies(keyword, numEmp = undefined, start = 0, castToClass = true, excludeGeneric = false) {
-        let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
+        let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
         const r = await this._makeReq(urlExt);
 
         if (!r?.included && r?.data?.errors) {
