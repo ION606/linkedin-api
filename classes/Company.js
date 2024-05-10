@@ -1,7 +1,8 @@
+import linkedInAPIClass from "../index.js";
 import { LinkedInProfile } from "./Profile.js";
 
 export class Company {
-    /** @type {import('../index.js').linkedInAPIClass} */
+    /** @type {linkedInAPIClass} */
     #APIRef;
 
 
@@ -43,9 +44,11 @@ export class Company {
     /**
      * @returns {Promise<JSON[] | LinkedInProfile[]>}
      * @param {string} name 
-     * @param {boolean} raw 
+     * @param {boolean} raw
+     * @param {number} limit
+     * @note this function calls {@link linkedInAPIClass.searchEmployees}
      */
-    searchEmployees = (name, limit=1000, raw=false) => this.#APIRef.searchEmployees(name, limit, !raw, [this.urn]);
+    searchEmployees = (name, limit = 1000, raw = false) => this.#APIRef.searchEmployees(name, limit, !raw, [this.entityNum]);
 
     async getInfo() {
         const toAdd = `q=universalName&universalName=${this.urn}`;
@@ -64,6 +67,7 @@ export class Company {
         this.name = data.title.text;
         this.urn = data.entityUrn;
         this.url = data.navigationUrl;
+        this.entityNum = data.trackingUrn.replace('urn:li:company:', '');
 
         if (!this.checkIfCompleted()) throw "NOT ALL NEEDED PARAMS FOUND!";
     }

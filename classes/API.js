@@ -46,7 +46,7 @@ function parseIncludedData(included, APIRef, excludeGeneric = false) {
 
         // APIRef may be ignored here
         return new EntityClass(item, APIRef);
-    }).filter(o => (excludeGeneric && o instanceof Company) || (!excludeGeneric && o));
+    }).filter(o => (excludeGeneric && (o instanceof Company)) || (!excludeGeneric && o));
 }
 
 
@@ -58,7 +58,7 @@ export async function parseResponse(data, APIRef, excludeGeneric) {
 
 
 function findRangeIndex(number) {
-    const rangeMap = ["B", "C", "D", "E", "F", "G", "H", "I"]
+    const rangeMap = ["B", "C", "D", "E", "F", "G", "H", "I"];
     const companySizeRanges = [
         [1, 10],
         [11, 50],
@@ -89,7 +89,7 @@ export function numsToSizes(...nums) {
 
     const ranges = nums.map(findRangeIndex);
     if (ranges.includes(-1)) throw `${nums} CONTAINS AN INVALID RANGE!`;
-    return `[${ranges.join("%2C")}]`;
+    return `[${ranges.join(",")}]`;
 }
 
 
@@ -195,10 +195,14 @@ export default class linkedInAPIClass {
      * @param {boolean} [excludeGeneric=false]
      * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
      */
-    async searchCompanies(keyword, numEmp, start = 0, castToClass = true, excludeGeneric = false) {
-        let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))),includeFiltersInResponse:false))`;
-        if (numEmp) urlExt += `&companySize=${numsToSizes(...numEmp)}`;
+    async searchCompanies(keyword, numEmp = undefined, start = 0, castToClass = true, excludeGeneric = false) {
+        let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
         const r = await this._makeReq(urlExt);
+
+        if (!r?.included && r?.data?.errors) {
+            console.error(JSON.stringify(r.data.errors))
+            throw "ERROR!";
+        }
         if (!castToClass) return r;
         else return parseResponse(r, this, excludeGeneric);
     }
@@ -207,7 +211,7 @@ export default class linkedInAPIClass {
     /**
      * @returns {Promise<LinkedInProfile[]>}
      * @param {String} keyword the user to search for
-     * @param {Number?} [limit=1000]
+     * @param {Number?} [limit=1000] the function will find the bound the given number is contained in (see {@link findRangeIndex} for ranges)
      * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
      * @param {Array<String>?} currentCompanies
      * @param {Array<1 | 2 | 3>?} conDeg the level(s) of connection to include (defults to all)
@@ -219,16 +223,14 @@ export default class linkedInAPIClass {
         const empAll = [];
         for (let i = 0; i < limit; i += 50) {
             if (empAll.length >= limit) break;
-            let urlExt = `includeWebMetadata=true&variables=(start:${i},query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE)))))`;
+            let urlExt = `includeWebMetadata=true&variables=(start:${i},query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
 
-            if (currentCompanies.length) urlExt += `&currentCompany=["${currentCompanies.join('"%2C"')}"]`;
-            if (conDeg.length) {
-                const conFiltered = numToConDegs(conDeg);
-                if (conFiltered.length) urlExt += `network=["${currentCompanies.join('"%2C"')}"]}`
-            }
+            if (currentCompanies.length) urlExt += `,(key:currentCompany,value:List(${currentCompanies.join(',')}))`;
+            if (conDeg.length) urlExt += `,(key:network,value:List(${numToConDegs(conDeg)}))`;
+            urlExt += ')))';
 
             const r = await this._makeReq(urlExt);
-            if (!r) return [];
+            if (!r?.included?.length) return [];
 
             const filtered = r.included.filter(e => e.template === 'UNIVERSAL');
 

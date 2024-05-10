@@ -130,3 +130,5 @@ dist
 .pnp.*
 
 temp.js
+config.json
+cookie.txt
