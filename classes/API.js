@@ -187,31 +187,40 @@ export default class linkedInAPIClass {
      */
     evade = () => wait(randomIntFromInterval(2, 5) * 1000);
 
-    /**
+     /**
      * @param {String} keyword i.e. "biotechnology"
      * @param {Array<Number>?} numEmp
+     * @param {Number?} [limit=1000] the function will use the bound the given number is contained in (see {@link findRangeIndex} for ranges)
      * @param {Number?} [start=0]
      * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
      * @param {boolean} [excludeGeneric=false]
      * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
      */
-    async searchCompanies(keyword, numEmp = undefined, start = 0, castToClass = true, excludeGeneric = false) {
-        let urlExt = `variables=(start:${start},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
-        const r = await this._makeReq(urlExt);
+     async searchCompanies(keyword, numEmp = undefined, limit = 1000, start = 0, castToClass = true, excludeGeneric = false) {
+        const compAll = [];
+        for (let i = start; i < limit; i += 50) {
+            let urlExt = `variables=(start:${i},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
+            const r = await this._makeReq(urlExt);
 
-        if (!r?.included && r?.data?.errors) {
-            console.error(JSON.stringify(r.data.errors))
-            throw "ERROR!";
+            if (!r?.included && r?.data?.errors) {
+                console.error(JSON.stringify(r.data.errors))
+                throw "ERROR!";
+            }
+
+            if (!castToClass) compAll.push(r);
+            else compAll.push(await parseResponse(r, this, excludeGeneric));
+
+            await this.evade();
         }
-        if (!castToClass) return r;
-        else return parseResponse(r, this, excludeGeneric);
+
+        return compAll.flat();
     }
 
 
     /**
      * @returns {Promise<LinkedInProfile[]>}
      * @param {String} keyword the user to search for
-     * @param {Number?} [limit=1000] the function will find the bound the given number is contained in (see {@link findRangeIndex} for ranges)
+     * @param {Number?} [limit=1000] the function will use the bound the given number is contained in (see {@link findRangeIndex} for ranges)
      * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
      * @param {boolean} [filterObfuscated=true] where or not to filter out members with obfuscated profiles ("LinkedIn Member")
      * @param {Array<String>?} currentCompanies
