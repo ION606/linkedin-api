@@ -213,16 +213,16 @@ export default class linkedInAPIClass {
      * @param {String} keyword the user to search for
      * @param {Number?} [limit=1000] the function will find the bound the given number is contained in (see {@link findRangeIndex} for ranges)
      * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
+     * @param {boolean} [filterObfuscated=true] where or not to filter out members with obfuscated profiles ("LinkedIn Member")
      * @param {Array<String>?} currentCompanies
      * @param {Array<1 | 2 | 3>?} conDeg the level(s) of connection to include (defults to all)
      * @example
      * // search for "John Appleseed" (who works at github), but only the first 50 results who are also first connections
      * LAPI.searchEmployees("John Appleseed", 50, true, ["1418841"], [1])
      */
-    async searchEmployees(keyword, limit = 1000, castToClass = true, currentCompanies = [], conDeg = []) {
+    async searchEmployees(keyword, limit = 1000, castToClass = true, filterObfuscated = true, currentCompanies = [], conDeg = []) {
         const empAll = [];
-        for (let i = 0; i < limit; i += 50) {
-            if (empAll.length >= limit) break;
+        for (let i = 0; empAll.length < limit; i += 50) {
             let urlExt = `includeWebMetadata=true&variables=(start:${i},query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
 
             if (currentCompanies.length) urlExt += `,(key:currentCompany,value:List(${currentCompanies.join(',')}))`;
@@ -230,9 +230,15 @@ export default class linkedInAPIClass {
             urlExt += ')))';
 
             const r = await this._makeReq(urlExt);
-            if (!r?.included?.length) return [];
 
-            const filtered = r.included.filter(e => e.template === 'UNIVERSAL');
+            // there's nothing left, returns what we have
+            if (!r?.included?.length) return empAll;
+
+            // profiles with no info can be useless
+            const filtered = r.included.filter(e => {
+                if (!filterObfuscated) return e.template === 'UNIVERSAL';
+                else return (e.template === 'UNIVERSAL' && e.title.text !== 'LinkedIn Member');
+            });
 
             if (filtered.length) empAll.push(...filtered);
             await this.evade();

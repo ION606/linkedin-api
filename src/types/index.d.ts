@@ -172,11 +172,12 @@ export default class linkedInAPIClass {
      * @param keyword The user to search for
      * @param limit Maximum number of results
      * @param castToClass Whether to cast the result to LinkedInProfile classes or return raw JSON
+     * @param filterObfuscated where or not to filter out members with obfuscated profiles ("LinkedIn Member")
      * @param currentCompanies Companies to filter by
      * @param conDeg Connection degrees to include
      * @returns Promise resolving to either an array of LinkedInProfile or raw JSON
      */
-    searchEmployees(keyword: string, limit?: number, castToClass?: boolean, currentCompanies?: string[], conDeg?: Array<1 | 2 | 3>): Promise<any>;
+    searchEmployees(keyword: string, limit?: number, castToClass?: boolean, filterObfuscated?: boolean, currentCompanies?: string[], conDeg?: Array<1 | 2 | 3>): Promise<any>;
 
     /**
      * Makes a request to the LinkedIn API.
