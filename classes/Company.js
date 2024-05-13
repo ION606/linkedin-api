@@ -44,11 +44,11 @@ export class Company {
     /**
      * @returns {Promise<JSON[] | LinkedInProfile[]>}
      * @param {string} name 
-     * @param {boolean} raw
+     * @param {boolean} castToClass
      * @param {number} limit
      * @note this function calls {@link linkedInAPIClass.searchEmployees}
      */
-    searchEmployees = (name, limit = 1000, raw = false) => this.#APIRef.searchEmployees(name, limit, !raw, [this.entityNum]);
+    searchEmployees = (name, limit = 1000, castToClass = true) => this.#APIRef.searchEmployees(name, limit, castToClass, [this.entityNum]);
 
     async getInfo() {
         const toAdd = `q=universalName&universalName=${this.urn}`;
