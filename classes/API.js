@@ -3,6 +3,8 @@ import { wrapper } from 'axios-cookiejar-support';
 import { CookieJar } from 'tough-cookie';
 import axiosModule from 'axios';
 import { LinkedInProfile, Company, GenericEntity, Group, SocialActivityCounts } from '../index.js';
+import { LoadingBar } from './misc.js';
+
 
 const cookieJar = new CookieJar();
 const axios = wrapper(axiosModule.create({
@@ -187,20 +189,27 @@ export default class linkedInAPIClass {
      */
     evade = () => wait(randomIntFromInterval(2, 5) * 1000);
 
-     /**
-     * @param {String} keyword i.e. "biotechnology"
-     * @param {Array<Number>?} numEmp
-     * @param {Number?} [limit=1000] the function will use the bound the given number is contained in (see {@link findRangeIndex} for ranges)
-     * @param {Number?} [start=0]
-     * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
-     * @param {boolean} [excludeGeneric=false]
-     * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
-     */
-     async searchCompanies(keyword, numEmp = undefined, limit = 1000, start = 0, castToClass = true, excludeGeneric = false) {
+    /**
+    * @param {String} keyword i.e. "biotechnology"
+    * @param {Array<Number>?} numEmp
+    * @param {Number?} [limit=1000] the function will use the bound the given number is contained in (see {@link findRangeIndex} for ranges)
+    * @param {Number?} [start=0]
+    * @param {boolean?} [castToClass=true] whether the function should return a list of Company classes or just raw JSON
+    * @param {boolean} [excludeGeneric=false]
+    * @returns {Promise<[SocialActivityCounts | Group | Company | GenericEntity]>}
+    */
+    async searchCompanies(keyword, numEmp = undefined, limit = 1000, start = 0, castToClass = true, excludeGeneric = false) {
         const compAll = [];
+
+        if (this.logAll) console.log(`scanning for ${limit} companies with the keyword "${keyword}"`);
+
+        const lb = (this.logAll) ? new LoadingBar(Math.round(limit / 50)) : null;
+
         for (let i = start; i < limit; i += 50) {
             let urlExt = `variables=(start:${i},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
             const r = await this._makeReq(urlExt);
+
+            if (this.logAll) lb.increment();
 
             if (!r?.included && r?.data?.errors) {
                 console.error(JSON.stringify(r.data.errors))
@@ -230,7 +239,9 @@ export default class linkedInAPIClass {
      * LAPI.searchEmployees("John Appleseed", 50, true, ["1418841"], [1])
      */
     async searchEmployees(keyword, limit = 1000, castToClass = true, filterObfuscated = true, currentCompanies = [], conDeg = []) {
-        const empAll = [];
+        const empAll = [],
+            lb = (this.logAll) ? new LoadingBar(Math.floor(limit/10)) : null;
+
         for (let i = 0; empAll.length < limit; i += 50) {
             let urlExt = `includeWebMetadata=true&variables=(start:${i},query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
 
@@ -239,6 +250,8 @@ export default class linkedInAPIClass {
             urlExt += ')))';
 
             const r = await this._makeReq(urlExt);
+            
+            if (this.logAll) lb.increment(5);
 
             // there's nothing left, returns what we have
             if (!r?.included?.length) {
@@ -281,14 +294,16 @@ export default class linkedInAPIClass {
         let cookie;
         if (this.resetCookies || !fs.existsSync("cookie.txt")) {
             cookie = await this.helper.getCookies(username, password);
-            console.log(cookie);
+            if (this.logAll) console.log(cookie);
 
-            if (cookie['login_result'] != "CHALLENGE") throw `\n\nIP IS NOT AUTHORIZED, PLEASE LOG IN THROUGH YOUR BROWSER USING:\nusername: ${username}\npassword: ${password}\n\n`;
+            if (cookie['login_result'] == "CHALLENGE") throw `\n\nIP IS NOT AUTHORIZED, PLEASE LOG IN THROUGH YOUR BROWSER USING:\nusername: ${username}\npassword: ${password}\n\n`;
             if (cookie['login_result'] != "PASS") throw cookie;
 
             // const sessioncookie = await this.#getCookies();
             // throw "NO COOKIE FOUND!";
         } else cookie = fs.readFileSync('cookie.txt');
+
+        if (this.logAll) console.log("LOGGED IN!");
 
         this.headers = {
             'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
@@ -311,7 +326,8 @@ export default class linkedInAPIClass {
         };
     }
 
-    constructor(resetCookies = false) {
+    constructor(logAll = false, resetCookies = false) {
+        this.logAll = logAll;
         this.resetCookies = resetCookies;
         this.helper = new APIHelper();
     }

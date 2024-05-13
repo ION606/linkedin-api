@@ -2,7 +2,7 @@ import LinkedInAPIClass from "../index.js";
 import fs from 'fs';
 
 (async () => {
-    const LAPI = new LinkedInAPIClass();
+    const LAPI = new LinkedInAPIClass(true);
 
     const o = JSON.parse(fs.readFileSync('config.json'));
     await LAPI.login(o.email, o.password);
