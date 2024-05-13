@@ -241,7 +241,10 @@ export default class linkedInAPIClass {
             const r = await this._makeReq(urlExt);
 
             // there's nothing left, returns what we have
-            if (!r?.included?.length) return empAll;
+            if (!r?.included?.length) {
+                if (!castToClass) return empAll;
+                else return empAll.map(o => new LinkedInProfile(o, this));
+            }
 
             // profiles with no info can be useless
             const filtered = r.included.filter(e => {
