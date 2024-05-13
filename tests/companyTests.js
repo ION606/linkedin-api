@@ -7,9 +7,9 @@ import fs from 'fs';
     const o = JSON.parse(fs.readFileSync('config.json'));
     await LAPI.login(o.email, o.password);
 
-    const c = await LAPI.searchCompanies('microsoft', [5001], 20, 0, true, true);
+    const c = (await LAPI.searchCompanies('microsoft', [5001], 20, 0, true, true)).find(o => (o.name === 'Microsoft'));
     console.log(c);
     
-    const managers = await c.find(o => (o.name === 'Microsoft')).searchEmployees('manager', 5);
+    const managers = await c.searchEmployees('manager');
     console.log(managers, managers.length);
 })();

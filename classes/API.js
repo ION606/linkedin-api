@@ -240,18 +240,16 @@ export default class linkedInAPIClass {
      */
     async searchEmployees(keyword, limit = 1000, castToClass = true, filterObfuscated = true, currentCompanies = [], conDeg = []) {
         const empAll = [],
-            lb = (this.logAll) ? new LoadingBar(Math.floor(limit/10)) : null;
+            lb = (this.logAll) ? new LoadingBar(Math.floor(limit / 10)) : null;
 
         for (let i = 0; empAll.length < limit; i += 50) {
-            let urlExt = `includeWebMetadata=true&variables=(start:${i},query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
+            let urlExt = `includeWebMetadata=true&variables=(start:${i},origin:FACETED_SEARCH,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
 
             if (currentCompanies.length) urlExt += `,(key:currentCompany,value:List(${currentCompanies.join(',')}))`;
             if (conDeg.length) urlExt += `,(key:network,value:List(${numToConDegs(conDeg)}))`;
-            urlExt += ')))';
+            urlExt += '),includeFiltersInResponse:false),count:50)';
 
             const r = await this._makeReq(urlExt);
-            
-            if (this.logAll) lb.increment(5);
 
             // there's nothing left, returns what we have
             if (!r?.included?.length) {
@@ -265,7 +263,13 @@ export default class linkedInAPIClass {
                 else return (e.template === 'UNIVERSAL' && e.title.text !== 'LinkedIn Member');
             });
 
-            if (filtered.length) empAll.push(...filtered);
+            if (this.logAll) console.log(r.included?.length, '--->', filtered.length);
+
+            if (filtered.length) {
+                if (this.logAll) lb.increment(Math.round(filtered.length / 10));
+                empAll.push(...filtered);
+            }
+
             await this.evade();
         }
 

@@ -129,6 +129,6 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-temp.js
+temp.*
 config.json
 cookie.txt
