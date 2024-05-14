@@ -39,6 +39,16 @@ export class Company {
         return (raw) ? empAll : empAll.map(eRaw => new LinkedInProfile(eRaw, this.#APIRef));
     }
 
+    toObj() {
+        return {
+            data: {
+                title: { text: this.name },
+                entityUrn: this.urn,
+                navigationUrl: this.url,
+                trackingUrn: `urn:li:company:${this.entityNum}`
+            }
+        };
+    }
 
     /**
      * @returns {Promise<JSON[] | LinkedInProfile[]>}
