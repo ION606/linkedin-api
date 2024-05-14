@@ -240,14 +240,14 @@ export default class linkedInAPIClass {
      */
     async searchEmployees(keyword, limit = 1000, castToClass = true, filterObfuscated = true, currentCompanies = [], conDeg = []) {
         const empAll = [],
-            lb = (this.logAll) ? new LoadingBar(Math.floor(limit / 10)) : null;
+            lb = (this.logAll) ? new LoadingBar(Math.ceil(limit / 10)) : null;
 
-        for (let i = 0; empAll.length < limit; i += 50) {
+        for (let i = 0; empAll.length < limit; i += 20) {
             let urlExt = `includeWebMetadata=true&variables=(start:${i},origin:FACETED_SEARCH,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(PEOPLE))`;
 
             if (currentCompanies.length) urlExt += `,(key:currentCompany,value:List(${currentCompanies.join(',')}))`;
             if (conDeg.length) urlExt += `,(key:network,value:List(${numToConDegs(conDeg)}))`;
-            urlExt += '),includeFiltersInResponse:false),count:50)';
+            urlExt += '),includeFiltersInResponse:false))';
 
             const r = await this._makeReq(urlExt);
 
@@ -263,14 +263,12 @@ export default class linkedInAPIClass {
                 else return (e.template === 'UNIVERSAL' && e.title.text !== 'LinkedIn Member');
             });
 
-            if (this.logAll) console.log(r.included?.length, '--->', filtered.length);
+            // if (this.logAll) console.error(r.included?.length, '--->', filtered.length);
 
             if (filtered.length) {
-                if (this.logAll) lb.increment(Math.round(filtered.length / 10));
+                if (this.logAll) lb.increment(Math.ceil(filtered.length / 10));
                 empAll.push(...filtered);
             }
-
-            await this.evade();
         }
 
         if (!castToClass) return empAll;

@@ -14,19 +14,18 @@ export class Company {
      * @note This function skips over any employees who's profile is marked as private
      */
     async getEmployees(limit = Infinity, raw = false) {
-        const employeesInit = await this.#APIRef._makeReq(`variables=(start:0,origin:FACETED_SEARCH,query:(flagshipSearchIntent:ORGANIZATIONS_PEOPLE_ALUMNI,queryParameters:List((key:currentCompany,value:List(${this.urn})),(key:resultType,value:List(ORGANIZATION_ALUMNI))),includeFiltersInResponse:true),count:1)`)
+        const employeesInit = await this.#APIRef._makeReq(`variables=(start:0,origin:FACETED_SEARCH,query:(flagshipSearchIntent:ORGANIZATIONS_PEOPLE_ALUMNI,queryParameters:List((key:currentCompany,value:List(${this.entityNum})),(key:resultType,value:List(ORGANIZATION_ALUMNI))),includeFiltersInResponse:true),count:1)`);
 
         const numEmp = employeesInit.data.data.searchDashClustersByAll.paging.total,
-            empAll = []
-
+            empAll = [];
 
         // since the max cap is 50, we need to iterate until it's over 50
         for (let i = 0; i < numEmp; i += 50) {
-            if (empAll.length >= limit) break;
+            if (empAll.length >= limit || i >= numEmp) break;
 
-            const c = (i + 50 >= limit) ? limit - i : 50;
+            const c = (i + 50 >= numEmp) ? numEmp - i : 50;
 
-            const employeeRes = await this.#APIRef._makeReq(`variables=(start:${i},origin:FACETED_SEARCH,query:(flagshipSearchIntent:ORGANIZATIONS_PEOPLE_ALUMNI,queryParameters:List((key:currentCompany,value:List(${this.urn})),(key:resultType,value:List(ORGANIZATION_ALUMNI))),includeFiltersInResponse:true),count:${c})`);
+            const employeeRes = await this.#APIRef._makeReq(`variables=(start:${i},origin:FACETED_SEARCH,query:(flagshipSearchIntent:ORGANIZATIONS_PEOPLE_ALUMNI,queryParameters:List((key:currentCompany,value:List(${this.entityNum})),(key:resultType,value:List(ORGANIZATION_ALUMNI))),includeFiltersInResponse:true),count:${c})`);
             const employees = employeeRes.included;
 
             const empParsed = employees.filter(e => (e.$type === "com.linkedin.voyager.dash.search.EntityResultViewModel"))
