@@ -214,7 +214,7 @@ export default class linkedInAPIClass {
                 throw "ERROR!";
             }
 
-            if (this.logAll) lb.increment(Math.ceil(r.included.length / 10));
+            if (this.logAll) lb.increment(Math.ceil(r.included.length / 50));
 
             if (!castToClass) compAll.push(r);
             else compAll.push(await parseResponse(r, this, excludeGeneric));
