@@ -48,7 +48,7 @@ export class LoadingBar {
         }
     }
 
-    increment(amt) {
+    increment(amt = 1) {
         cursorTo(process.stdout, this.cursor);
         for (let i = 0; i < amt; i++) process.stdout.write("\u2588");
         this.cursor += amt;

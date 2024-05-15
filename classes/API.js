@@ -209,12 +209,12 @@ export default class linkedInAPIClass {
             let urlExt = `variables=(start:${i},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
             const r = await this._makeReq(urlExt);
 
-            if (this.logAll) lb.increment();
-
             if (!r?.included && r?.data?.errors) {
                 console.error(JSON.stringify(r.data.errors))
                 throw "ERROR!";
             }
+
+            if (this.logAll) lb.increment(Math.ceil(r.included.length / 10));
 
             if (!castToClass) compAll.push(r);
             else compAll.push(await parseResponse(r, this, excludeGeneric));
