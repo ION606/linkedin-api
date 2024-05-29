@@ -59,7 +59,7 @@ export async function parseResponse(data, APIRef, excludeGeneric) {
 }
 
 
-function findRangeIndex(number) {
+export function findRangeIndex(number) {
     const rangeMap = ["B", "C", "D", "E", "F", "G", "H", "I"];
     const companySizeRanges = [
         [1, 10],
