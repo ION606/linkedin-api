@@ -12,7 +12,7 @@ export class LinkedInProfile {
         navigationUrl?: string,
         trackingUrn?: string,
         entityUrn?: string,
-        insightsResolutionResults?: Array<{simpleInsight?: {title?: {text: string}}}>
+        insightsResolutionResults?: Array<{ simpleInsight?: { title?: { text: string } } }>
         primarySubtitle?: { text: string },
         secondarySubtitle?: { text: string },
         bserpEntityNavigationalUrl?: string,
@@ -112,12 +112,12 @@ export class ReactionTypeCount {
  * Class representing the counts of social activities such as likes and comments.
  */
 export class SocialActivityCounts {
-    constructor(params: { 
-        entityUrn: string; 
-        numComments: number; 
-        numLikes: number; 
-        reactionTypeCounts: Array<{ count: number; reactionType: string; }>; 
-        liked: boolean; 
+    constructor(params: {
+        entityUrn: string;
+        numComments: number;
+        numLikes: number;
+        reactionTypeCounts: Array<{ count: number; reactionType: string; }>;
+        liked: boolean;
         preDashEntityUrn?: string;
     });
 
@@ -199,3 +199,20 @@ export default class linkedInAPIClass {
     private resetCookies: boolean;
     private helper: any;
 }
+
+/**
+ * Finds the range index for a given number.
+ * 
+ * @param number The number to find the range index for.
+ * @returns The corresponding range index as a string.
+ */
+export function findRangeIndex(number: number): string | -1;
+
+/**
+ * Converts an array of numbers to a comma-separated string of range indices.
+ * 
+ * @param nums An array of numbers to convert to range indices.
+ * @returns A comma-separated string of range indices.
+ * @throws An error if more than 8 numbers are provided or if any number is invalid.
+ */
+export function numsToSizes(...nums: number[]): string;
