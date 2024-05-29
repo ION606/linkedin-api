@@ -38,8 +38,9 @@ export class LoadingBar {
         this.size = size;
         this.cursor = 0;
         this.timer = null;
+        this.y = process.stdout.rows;
 
-        cursorTo(process.stdout, this.cursor);
+        cursorTo(process.stdout, this.cursor, this.y);
 
         // draw the initial outline
         process.stdout.write("\x1B[?25l");
@@ -49,7 +50,7 @@ export class LoadingBar {
     }
 
     increment(amt = 1) {
-        cursorTo(process.stdout, this.cursor);
+        cursorTo(process.stdout, this.cursor, this.y);
         for (let i = 0; i < amt; i++) process.stdout.write("\u2588");
         this.cursor += amt;
     }

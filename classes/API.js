@@ -91,7 +91,7 @@ export function numsToSizes(...nums) {
 
     const ranges = nums.map(findRangeIndex);
     if (ranges.includes(-1)) throw `${nums} CONTAINS AN INVALID RANGE!`;
-    return `[${ranges.join(",")}]`;
+    return `${ranges.join(",")}`;
 }
 
 
