@@ -67,6 +67,17 @@ export class Company {
     }
 
     checkIfCompleted = () => !!(this.name && this.url && this.urn && this.#APIRef);
+    awaitCompanyURL = async () => {
+        try {
+            if (!this.url) return false;
+            const r = await axios.get(this.url);
+            const $ = cheerio.load(r.data);
+            const u = $('a[aria-describedby="websiteLinkDescription"]')?.attr('href')?.split('url=http')?.at(1)?.split('&')[0];
+            if (u) this.websiteurl = `http${decodeURIComponent(u)}`;
+            return true;
+        }
+        catch (err) { return false; }
+    }
 
     /**
      * @param {{title: {text: String}, entityUrn: String, navigationUrl: String}} data
@@ -79,12 +90,6 @@ export class Company {
         this.urn = data.entityUrn;
         this.url = data.navigationUrl;
         this.entityNum = data.trackingUrn.replace('urn:li:company:', '');
-
-        axios.get(this.url).then(r => {
-            const $ = cheerio.load(r.data);
-            const u = $('a[aria-describedby="websiteLinkDescription"]')?.attr('href')?.split('url=http')?.at(1)?.split('&')[0];
-            if (u) this.websiteurl = `http${decodeURIComponent(u)}`;
-        }).catch(_ => null);
 
         if (!this.checkIfCompleted()) throw "NOT ALL NEEDED PARAMS FOUND!";
     }
