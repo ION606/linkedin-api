@@ -16,7 +16,7 @@ export class LinkedInProfile {
         let { phoneNumbers, emailAddress, websites, weChatContactInfo, twitterHandles, instantMessengers } = uObj;
 
         if (websites) websites = websites.map(w => ({ label: w.label, category: w.category, url: w.url }));
-        return { phoneNumbers, emailAddress, websites, weChatContactInfo, twitterHandles, instantMessengers };
+        return { phoneNumbers, emailAddress: (emailAddress?.emailAddress || emailAddress), websites, weChatContactInfo, twitterHandles, instantMessengers };
     }
 
     // Parse specific services offered, contained in the 'simpleInsight' section of 'insightsResolutionResults'

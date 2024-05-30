@@ -205,7 +205,7 @@ export default class linkedInAPIClass {
 
         const lb = (this.logAll) ? new LoadingBar(Math.round(limit / 50)) : null;
 
-        for (let i = start; i < limit; i += 50) {
+        for (let i = start; compAll.length < limit; i += 50) {
             let urlExt = `variables=(start:${i},origin:GLOBAL_SEARCH_HEADER,query:(keywords:${keyword},flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:resultType,value:List(COMPANIES))${(numEmp) ? `,(key:companySize,value:List(${numsToSizes(...numEmp)}))` : ''}),includeFiltersInResponse:false))`;
             const r = await this._makeReq(urlExt);
 
@@ -249,7 +249,7 @@ export default class linkedInAPIClass {
             if (conDeg.length) urlExt += `,(key:network,value:List(${numToConDegs(conDeg)}))`;
             urlExt += '),includeFiltersInResponse:false))';
 
-            const r = await this._makeReq(urlExt);
+            const r = await this._makeReq(urlExt, false, true);
 
             // there's nothing left, returns what we have
             if (!r?.included?.length) {
@@ -281,9 +281,10 @@ export default class linkedInAPIClass {
      * @returns {Promise<Buffer | null>}
      * @throws The promise will reject on error
      */
-    async _makeReq(reqPath, isProfile = false) {
+    async _makeReq(reqPath, isProfile = false, ignoreTimeoutErr = false) {
         await this.evade();
         const res = await axios.get(`https://www.linkedin.com/voyager/api/graphql?${reqPath}&queryId=${(!isProfile) ? "voyagerSearchDashClusters.f0c4f21d8a526c4a5dd0ae253c9b6e02" : "voyagerIdentityDashProfiles.5a6722404e6afd08958f5105e51cad51"}`, { headers: this.headers }).catch((err) => {
+            if (err?.code === 'ECONNRESET' && ignoreTimeoutErr) return null;
             console.error(err);
             return null;
         });

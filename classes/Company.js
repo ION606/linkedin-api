@@ -1,3 +1,5 @@
+import axios from "axios";
+import * as cheerio from 'cheerio';
 import linkedInAPIClass from "../index.js";
 import { LinkedInProfile } from "./Profile.js";
 
@@ -77,6 +79,12 @@ export class Company {
         this.urn = data.entityUrn;
         this.url = data.navigationUrl;
         this.entityNum = data.trackingUrn.replace('urn:li:company:', '');
+
+        axios.get(this.url).then(r => {
+            const $ = cheerio.load(r.data);
+            const u = $('a[aria-describedby="websiteLinkDescription"]')?.attr('href')?.split('url=http')?.at(1)?.split('&')[0];
+            if (u) this.websiteurl = `http${decodeURIComponent(u)}`;
+        }).catch(_ => null);
 
         if (!this.checkIfCompleted()) throw "NOT ALL NEEDED PARAMS FOUND!";
     }
