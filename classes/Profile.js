@@ -1,4 +1,5 @@
 import linkedInAPIClass from "../index.js";
+import { numToConDegs } from "./API.js";
 
 export class LinkedInProfile {
     /** @type {linkedInAPIClass} */
@@ -29,12 +30,28 @@ export class LinkedInProfile {
         return '';
     }
 
+    /**
+     * @param {number[]} conDeg
+     * @param {number} [limit=1000]
+     */
+    async getConnections (conDeg, limit = 1000) {
+        if (!this.isConnected) throw `USER ${this.name} IS OUT OF NETWORK!`;
+        return await this.#APIRef.getConnections(this.entityNameJoined, this.entityUrn, conDeg, limit);
+    }
+
+    /**
+     * will send a friend request to this person
+     * @param {string} message
+     */
+    makeConnection = (message) => this.#APIRef.sendConnectionRequest(this.entityUrn, message);
+
     constructor(jsonData, apiRef) {
         this.#APIRef = apiRef;
         this.name = jsonData.title ? jsonData.title.text : '';
         this.entityNameJoined = jsonData.navigationUrl?.split("/in/")[1]?.split("?")[0];
         this.profileUrl = jsonData.navigationUrl || '';
         this.trackingUrn = jsonData.trackingUrn || '';
+        this.isConnected = (jsonData.entityCustomTrackingInfo?.memberDistance !== 'OUT_OF_NETWORK');
 
         const match = jsonData.entityUrn?.match(/urn:li:fsd_profile:(.*?),/);
         this.entityUrn = match ? match[1] : '';

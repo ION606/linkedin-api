@@ -132,3 +132,4 @@ dist
 temp.*
 config.json
 cookie.txt
+temp/

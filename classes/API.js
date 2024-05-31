@@ -227,6 +227,53 @@ export default class linkedInAPIClass {
 
 
     /**
+     * @param {number[]} conDeg
+     * @param {number} [limit=1000]
+     */
+    async getConnections(entityNameJoined, entityUrn, conDeg, limit = 1000, start = 0) {
+        const empAll = [];
+
+        if (this.logAll) console.log(`scanning for ${limit} connections for user "${entityNameJoined}"`);
+
+        const lb = (this.logAll) ? new LoadingBar(Math.round(limit / 50)) : null;
+
+        for (let i = start; empAll.length < limit; i += 50) {
+            let urlExt = `variables=(start:${i},origin:MEMBER_PROFILE_CANNED_SEARCH,memberIdentity:${entityNameJoined},query:(flagshipSearchIntent:SEARCH_SRP,queryParameters:List((key:connectionOf,value:List(${entityUrn})),(key:network,value:List(${numToConDegs(conDeg)})),(key:resultType,value:List(PEOPLE))),includeFiltersInResponse:false))`;
+            const r = await this._makeReq(urlExt);
+
+            if (!r?.included && r?.data?.errors) {
+                console.error(JSON.stringify(r.data.errors))
+                throw "ERROR!";
+            }
+            else if (!r?.data.included) break;
+
+            empAll.push(r);
+
+            if (this.logAll) lb.increment(Math.ceil(r.included.length / 50));
+            await this.evade();
+        }
+
+        return empAll.flat();
+    }
+
+
+    async sendConnectionRequest(memberURN, customMessage = undefined) {
+        await this.evade();
+
+        const rPath = 'https://www.linkedin.com/voyager/api/voyagerRelationshipsDashMemberRelationships?action=verifyQuotaAndCreateV2&decorationId=com.linkedin.voyager.dash.deco.relationships.InvitationCreationResultWithInvitee-2';
+        const body = {
+            "invitee":
+                { "inviteeUnion": { "memberProfile": `urn:li:fsd_profile:${memberURN}` } },
+            customMessage
+        }
+        const headers = this.headers;
+        headers['x-li-pem-metadata'] = 'Voyager - Invitations - Actions=invite-send';
+
+        const r = await axios.post(rPath, body, { headers }); // await axios.get(rPath, body, { headers }).catch(_ => null).then(_ => null).finally(() => axios.post(rPath, body, { headers }));
+        return r.data;
+    }
+
+    /**
      * @returns {Promise<LinkedInProfile[]>}
      * @param {String} keyword the user to search for
      * @param {Number?} [limit=1000] the function will use the bound the given number is contained in (see {@link findRangeIndex} for ranges)

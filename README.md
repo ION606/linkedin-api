@@ -6,7 +6,7 @@ This package is not in any way affiliated with LinkedIn. In fact, your account m
 
 You can use your LinkedIn credentials in code, making this super simple to use!
 
-*This project was HEAVILY inspired by Tomquirk's LinkedIn-API PyPy package, which you can find at https://github.com/tomquirk/linkedin-api*
+*This project was HEAVILY inspired by Tomquirk's LinkedIn-API PyPi package, which you can find at https://github.com/tomquirk/linkedin-api*
 
 ## Installation
 `npm i linkedin-api-js`
