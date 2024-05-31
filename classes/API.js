@@ -273,6 +273,37 @@ export default class linkedInAPIClass {
         return r.data;
     }
 
+
+    async startTyping(memberURN, originURN) {
+        await this.evade();
+        const rPath = 'https://www.linkedin.com/voyager/api/voyagerMessagingDashMessengerConversations?action=typing',
+            body = { "conversationUrn": `urn:li:msg_conversation:(urn:li:fsd_profile:${originURN},2-${memberURN})` };
+
+        await axios.post(rPath, body, { headers: this.headers });
+        return r.data;
+    }
+
+    async sendMessage(memberURN, originURN, msg) {
+        await this.startTyping(memberURN, originURN);
+        await this.evade();
+
+        const headers = this.headers;
+        headers['X-li-page-instance'] = 'urn:li:page:d_flagship3_people;Bcu9vSv6TBe4uT46jDAZuw==';
+
+        const rPath = 'https://www.linkedin.com/voyager/api/voyagerMessagingDashMessengerMessages?action=createMessage',
+            body = {
+                "message": {
+                    "body": {
+                        "attributes": [],
+                        "text": msg
+                    }, "originToken": "b7df876c-c072-4ef1-9aee-ef84895347d9", "renderContentUnions": []
+                }, "mailboxUrn": `urn:li:fsd_profile:${memberURN}`, "dedupeByClientGeneratedToken": false, "hostRecipientUrns": [`urn:li:fsd_profile:${originURN}`]
+            }
+
+        const r = await axios.post(rPath, body, { headers: this.headers });
+        return r.data;
+    }
+
     /**
      * @returns {Promise<LinkedInProfile[]>}
      * @param {String} keyword the user to search for

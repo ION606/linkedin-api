@@ -25,6 +25,8 @@ const comp = await LAPI.searchCompanies("Linux");
 const emp = await comp[0].getEmployees("Torvalds", 1);
 ```
 
+For more information, check out [The Wiki](https://github.com/ION606/linkedin-api/wiki/home)
+
 ## Contributions
 If you want to contribute, just fork, add your features, then make a PR
 
