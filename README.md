@@ -8,6 +8,10 @@ You can use your LinkedIn credentials in code, making this super simple to use!
 
 *This project was HEAVILY inspired by Tomquirk's LinkedIn-API PyPy package, which you can find at https://github.com/tomquirk/linkedin-api*
 
+## Installation
+`npm i linkedin-api-js`
+
+
 ## Quick-Start
 ```JS
 // log in

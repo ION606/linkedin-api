@@ -10,10 +10,19 @@
   "name": "linkedin-api-js",
   "version": "1.0.0-21",
   "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ION606/linkedin-api"
+  },
+  "homepage": "https://github.com/ION606/linkedin-api?tab=readme-ov-file#linkedin-api",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests/companyTests.js"
   },
   "author": "ION606",
-  "license": "ISC",
-  "description": ""
+  "license": "MIT",
+  "description": "An actually useful LinkedIn Nodejs package",
+  "bugs": {
+    "url": "https://github.com/ION606/linkedin-api/issues"
+  },
+  "keywords": ["linkedin", "linkedin api", "linkedin-api"]
 }
