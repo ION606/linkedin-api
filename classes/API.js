@@ -9,7 +9,8 @@ import { LoadingBar } from './misc.js';
 const cookieJar = new CookieJar();
 const axios = wrapper(axiosModule.create({
     jar: cookieJar, // attach cookie jar
-    withCredentials: true
+    withCredentials: true,
+    // maxRedirects: Infinity
 }));
 
 
@@ -123,9 +124,13 @@ class APIHelper {
 
     getCookies(username, password) {
         return new Promise(async (resolve, reject) => {
-            const spawn = (await import("child_process")).spawn;
-            const pythonProcess = spawn('python', ["auth.py", username, password]);
+            const pythonProcess = (await import("child_process")).exec(`python ${import.meta.dirname}/auth.py ${username} ${password}`);
+
             pythonProcess.stdout.on('data', (data) => resolve(data.toString()));
+            pythonProcess.stderr.on('data', (data) => reject(data.toString()));
+            pythonProcess.on('error', reject);
+
+            pythonProcess.on('exit', (code) => console.log('done!', code));
         });
     }
 
@@ -146,7 +151,7 @@ class APIHelper {
             JSESSIONID: scookie.get('JSESSIONID')
         };
 
-        console.log(payload);
+        // console.log(payload);
 
         // this.authheaders['cookies'] = res.headers['set-cookie'];
 
@@ -361,7 +366,7 @@ export default class linkedInAPIClass {
      */
     async _makeReq(reqPath, isProfile = false, ignoreTimeoutErr = false) {
         await this.evade();
-        const res = await axios.get(`https://www.linkedin.com/voyager/api/graphql?${reqPath}&queryId=${(!isProfile) ? "voyagerSearchDashClusters.f0c4f21d8a526c4a5dd0ae253c9b6e02" : "voyagerIdentityDashProfiles.5a6722404e6afd08958f5105e51cad51"}`, { headers: this.headers }).catch((err) => {
+        const res = await axios.get(`https://www.linkedin.com/voyager/api/graphql?${reqPath}&queryId=${(!isProfile) ? "voyagerSearchDashClusters.37920f17209f22c510dd410658abc540" : "voyagerIdentityDashProfiles.5a6722404e6afd08958f5105e51cad51"}`, { headers: this.headers }).catch((err) => {
             if (err?.code === 'ECONNRESET' && ignoreTimeoutErr) return null;
             console.error(err);
             return null;
@@ -387,23 +392,37 @@ export default class linkedInAPIClass {
         if (this.logAll) console.log("LOGGED IN!");
 
         this.headers = {
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:124.0) Gecko/20100101 Firefox/124.0',
+            'Host': 'www.linkedin.com',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; rv:128.0) Gecko/20100101 Firefox/128.0',
             'Accept': 'application/vnd.linkedin.normalized+json+2.1',
             'Accept-Language': 'en-US,en;q=0.5',
-            'Accept-Encoding': 'gzip, deflate, br',
-            'x-li-lang': 'en_US',
-            'x-li-track': '{"clientVersion":"1.13.14725","mpVersion":"1.13.14725","osName":"web","timezoneOffset":-7,"timezone":"America/Los_Angeles","deviceFormFactor":"DESKTOP","mpName":"voyager-web","displayDensity":1,"displayWidth":1920,"displayHeight":1080}',
-            'x-li-page-instance': 'urn:li:page:d_flagship3_search_srp_jobs;TvndZ7TATTy2i/ZUyyD3Zg==',
-            'csrf-token': 'ajax:2538600735149500238',
-            'x-restli-protocol-version': '2.0.0',
-            'x-li-pem-metadata': 'Voyager - Organization - LCP_Member=interest-pipeline',
+            'Accept-Encoding': 'gzip, deflate, br, zstd',
+            'DNT': '1',
+            'Sec-GPC': '1',
             'Connection': 'keep-alive',
-            'Referer': 'https://www.linkedin.com/jobs/search/?currentJobId=3840672849&distance=25.0&geoId=103644278&keywords=temp&origin=HISTORY',
+            'Referer': 'https://www.linkedin.com/search/results/companies/?keywords=microsoft&origin=GLOBAL_SEARCH_HEADER&sid=5mA',
             'Cookie': cookie,
             'Sec-Fetch-Dest': 'empty',
             'Sec-Fetch-Mode': 'cors',
             'Sec-Fetch-Site': 'same-origin',
-            'TE': 'trailers'
+            'TE': 'trailers',
+            'x-li-lang': 'en_US',
+            'x-li-track': JSON.stringify({
+                clientVersion: '1.13.21804',
+                mpVersion: '1.13.21804',
+                osName: 'web',
+                timezoneOffset: 0,
+                timezone: 'Atlantic/Reykjavik',
+                deviceFormFactor: 'DESKTOP',
+                mpName: 'voyager-web',
+                displayDensity: 2,
+                displayWidth: 4096,
+                displayHeight: 2160
+            }),
+            'x-li-page-instance': 'urn:li:page:d_flagship3_search_srp_companies;bfbz9Kn/TamNtptZQMG4Mg==',
+            'csrf-token': 'ajax:1264483706853073695',
+            'x-restli-protocol-version': '2.0.0',
+            'x-li-pem-metadata': 'Voyager - Companies SRP=search-results'
         };
     }
 
