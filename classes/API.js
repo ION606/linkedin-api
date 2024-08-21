@@ -124,7 +124,7 @@ class APIHelper {
 
     getCookies(username, password) {
         return new Promise(async (resolve, reject) => {
-            const pythonProcess = (await import("child_process")).exec(`python ${import.meta.dirname}/auth.py ${username} ${password}`);
+            const pythonProcess = (await import("child_process")).exec(`python classes/auth.py ${username} ${password}`);
 
             pythonProcess.stdout.on('data', (data) => resolve(data.toString()));
             pythonProcess.stderr.on('data', (data) => reject(data.toString()));
